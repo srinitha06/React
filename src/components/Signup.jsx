@@ -1,81 +1,101 @@
 import { useState } from "react";
 import axios from "axios";
+import './Signup.css';
+
 
 const Signup = () => {
     const [name, setName] = useState("");
     const [userName, setUserName] = useState("");
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
-    const [role, setRole] = useState("");
+    const [role, setRole] = useState([]);
 
-    async function addNewEmployee(e){
+    const handleRoleChange = (e) => {
+        const { value, checked } = e.target;
+        if (checked) {
+            setRole([...role, value]);
+        } else {
+            setRole(role.filter(r => r !== value));
+        }
+    };
+
+    async function addNewEmployee(e) {
         e.preventDefault();
-        const roleArray=rolenames.split(",").map(role=>role.trim());
-        console.log(roleArray);
-        
-            const req = await axios.post("http://localhost:3001/api/auth/signup",{
+        console.log(role);
+        try {
+            const req = await axios.post("http://localhost:3001/api/auth/signup", {
                 name,
-                username,
+                username: userName,
                 email,
                 password,
                 role
             });
-            if(req.data){
+            if (req.data) {
                 alert(req.data);
-            }
-            else{
+            } else {
                 alert("error during signup");
             }
-      
+        } catch (err) {
+            console.log(err);
+            alert("server error");
+        }
     }
-    
+
     return (
         <section>
             <h2>Signup</h2>
             <div>
                 <form onSubmit={addNewEmployee}>
-                    <label htmlFor="name">Employee Name</label>
+                    <label>Employee Name</label>
                     <input 
-                        type="text" 
-                        id="name" 
-                        value={name} 
+                        type="text"
+                        value={name}
                         onChange={(e) => setName(e.target.value)}
                     />
-                    <br></br>
-
-                    <label htmlFor="email">Employee Email</label>
+                    <br />
+                    <label>Employee Email</label>
                     <input 
-                        type="email" 
-                        id="email" 
-                        value={email} 
+                        type="email"
+                        value={email}
                         onChange={(e) => setEmail(e.target.value)}
                     />
-                    <br></br>
-
-                    <label htmlFor="username">Username</label>
+                    <br />
+                    <label>Username</label>
                     <input 
-                        type="text" 
-                        id="username" 
-                        value={userName} 
+                        type="text"
+                        value={userName}
                         onChange={(e) => setUserName(e.target.value)}
                     />
-                    <br></br>
-                    <label htmlFor="password">Password</label>
+                    <br />
+                    <label>Password</label>
                     <input 
-                        type="password" 
-                        id="password" 
-                        value={password} 
+                        type="password"
+                        value={password}
                         onChange={(e) => setPassword(e.target.value)}
                     />
-                    <br></br>
-                    <label htmlFor="role">Role</label>
-                    <input 
-                        type="text" 
-                        id="role" 
-                        value={role} 
-                        onChange={(e) => setRole(e.target.value)}
-                    />
-                    <br></br>
+                    <br />
+                    <label>Roles:</label><br />
+                    <label>
+                        <input 
+                            type="checkbox" 
+                            value="admin" 
+                            onChange={handleRoleChange} 
+                        /> Admin
+                    </label><br />
+                    <label>
+                        <input 
+                            type="checkbox" 
+                            value="developer" 
+                            onChange={handleRoleChange} 
+                        /> Developer
+                    </label><br />
+                    <label>
+                        <input 
+                            type="checkbox" 
+                            value="user" 
+                            onChange={handleRoleChange} 
+                        /> User
+                    </label><br />
                     <button type="submit">Sign Up</button>
                 </form>
             </div>
