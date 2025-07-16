@@ -1,81 +1,152 @@
-import { useEffect, useState } from "react";
-import axios from "axios";
+import React, { useState, useEffect } from 'react';
+import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
-const GetEmployees = () => {
-  const [employees, setEmployees] = useState([]);
-  const token = localStorage.getItem("token");
-  const role = localStorage.getItem("role"); // role is like "ROLE_ADMIN"
+const AddEmployees = () => {
+  const [formData, setFormData] = useState({
+    name: '',
+    email: '',
+    password: '',
+    userName: '',
+    roleNames: [],
+  });
+
+  const navigate = useNavigate();
+  const role = localStorage.getItem("role");
 
   useEffect(() => {
-    const fetchEmployees = async () => {
-      try {
-        const response = await axios.get("http://localhost:8080/employee", {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
-        setEmployees(response.data);
-      } catch (err) {
-        console.error("Error fetching employees", err);
-        alert("Unauthorized or Error");
-      }
-    };
+    if (role !== "ROLE_ADMIN") {
+      alert("Access Denied! Only admin can add employees.");
+      navigate("/");
+    }
+  }, [role, navigate]);
 
-    fetchEmployees();
-  }, [token]);
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      [name]: value,
+    }));
+  };
 
-  const handleDelete = async (empId) => {
+  const handleRoleCheckboxChange = (e) => {
+    const { value, checked } = e.target;
+    setFormData((prev) => ({
+      ...prev,
+      roleNames: checked
+        ? [...prev.roleNames, value]
+        : prev.roleNames.filter((role) => role !== value),
+    }));
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     try {
-      await axios.delete(`http://localhost:8080/employee/${empId}`, {
+      await axios.post('http://localhost:8080/api/auth/register', formData, {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      setEmployees(employees.filter((emp) => emp.empId !== empId));
-      alert("Employee deleted successfully");
+      alert('Employee Registered Successfully!');
+      setFormData({
+        name: '',
+        email: '',
+        password: '',
+        userName: '',
+        roleNames: [],
+      });
     } catch (err) {
-      console.error("Error deleting employee", err);
-      alert("Delete failed");
+      console.error('Register Error', err);
+      alert('Registration failed.');
     }
   };
 
   return (
-    <div className="container mt-4">
-      <h2>Employee List</h2>
-      <table className="table table-bordered">
-        <thead className="thead-dark">
-          <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Email</th>
-            {role === "ROLE_ADMIN" && <th>Actions</th>}
-          </tr>
-        </thead>
-        <tbody>
-          {employees.map((emp) => (
-            <tr key={emp.empId}>
-              <td>{emp.empId}</td>
-              <td>{emp.name}</td>
-              <td>{emp.email}</td>
-              {role === "ROLE_ADMIN" && (
-                <td>
-                  {role === "ROLE_ADMIN" && (
-                    <button
-                      onClick={() => handleDelete(emp.empId)}
-                      className="btn btn-danger btn-sm me-2"
-                    >
-                      Delete
-                    </button>
-                  )}
-                  <button className="btn btn-primary btn-sm">Edit</button>
-                </td>
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    <div className="container mt-5">
+      <div className="row justify-content-center">
+        <div className="col-md-6">
+          <div className="card p-4 shadow">
+            <h2 className="text-center mb-4">Add Employee</h2>
+            <form onSubmit={handleSubmit}>
+              <div className="mb-3">
+                <input
+                  type="text"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="form-control"
+                  placeholder="Full Name"
+                  required
+                />
+              </div>
+
+              <div className="mb-3">
+                <input
+                  type="text"
+                  name="userName"
+                  value={formData.userName}
+                  onChange={handleChange}
+                  className="form-control"
+                  placeholder="Username"
+                  required
+                />
+              </div>
+
+              <div className="mb-3">
+                <input
+                  type="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="form-control"
+                  placeholder="Email"
+                  required
+                />
+              </div>
+
+              <div className="mb-3">
+                <input
+                  type="password"
+                  name="password"
+                  value={formData.password}
+                  onChange={handleChange}
+                  className="form-control"
+                  placeholder="Password"
+                  required
+                />
+              </div>
+
+              <div className="mb-3">
+                <label className="form-check-label me-3">
+                  <input
+                    type="checkbox"
+                    className="form-check-input me-1"
+                    value="ROLE_USER"
+                    checked={formData.roleNames.includes("ROLE_USER")}
+                    onChange={handleRoleCheckboxChange}
+                  />
+                  ROLE_USER
+                </label>
+
+                <label className="form-check-label ms-3">
+                  <input
+                    type="checkbox"
+                    className="form-check-input me-1"
+                    value="ROLE_ADMIN"
+                    checked={formData.roleNames.includes("ROLE_ADMIN")}
+                    onChange={handleRoleCheckboxChange}
+                  />
+                  ROLE_ADMIN
+                </label>
+              </div>
+
+              <button type="submit" className="btn btn-primary w-100">Register</button>
+            </form>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };
 
-export default GetEmployees;
+export default AddEmployees;
