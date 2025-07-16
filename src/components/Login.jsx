@@ -1,48 +1,86 @@
 import { useState } from "react";
 import axios from "axios";
-
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [userName, setUserName] = useState("");
   const [password, setPassword] = useState("");
-  async function handleLogin(event){
+  const navigate = useNavigate();
+  async function handleLogin(event) {
     event.preventDefault();
-    try{
-        const token = await axios.post("http://localhost:3001/api/auth/login",{userName,password})
-        console.log(token);
-        alert("Login Successful")
-    } catch (e){
-        console.log("Login Error", e);
-        alert("Invalid Cred")
+    try {
+      const request = await axios.post("http://localhost:8080/api/auth/login", {
+        userName,
+        password,
+      });
+      const token = request.data.token;
+      const role = request.data.roles;
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", role);
+      console.log(request.data.username);
+      console.log(request.data.roles);
+      console.log(token);
+      alert("Login Successful");
+      navigate("/");
+    } catch (e) {
+      console.log("Login Error", e);
+      alert("Invalid Cred");
     }
     console.log("Form Submitted");
   }
   return (
-    <div>
-      <h2>Login</h2>
-      <div>
-        <form onSubmit={handleLogin}>
-          <label htmlFor="userName">User Name</label>
-          <input
-            id="userName"
-            name="userName"
-            value={userName}
-            type="text"
-            onChange={(e) => setUserName(e.target.value)}
-          />
-          <br /> <br />
-          <label htmlFor="password">Password</label>
-          <input
-            id="password"
-            name="password"
-            value={password}
-            type="password"
-            onChange={(e) => setPassword(e.target.value)}
-          />
-          <br />
-          <br />
-          <button type="submit">Login</button>
-        </form>
+    <div className="container">
+      <br /> <br />
+      <div className="row">
+        <div className="col-md-6 offset-md-3">
+          <div className="card">
+            <div className="card-header">
+              <h2 className="text-center"> Login Form </h2>
+            </div>
+
+            <div className="card-body">
+              <form>
+                <div className="row mb-3">
+                  <label className="col-md-3 control-label"> Username</label>
+                  <div className="col-md-9">
+                    <input
+                      type="text"
+                      name="username"
+                      className="form-control"
+                      placeholder="Enter username"
+                      value={userName}
+                      onChange={(e) => setUserName(e.target.value)}
+                    ></input>
+                  </div>
+                </div>
+
+                <div className="row mb-3">
+                  <label className="col-md-3 control-label"> Password </label>
+                  <div className="col-md-9">
+                    <input
+                      type="password"
+                      name="password"
+                      className="form-control"
+                      placeholder="Enter password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                    ></input>
+                  </div>
+                </div>
+
+                <div className="form-group mb-3">
+                  <button
+                    className="btn btn-primary"
+                    onClick={(e) => handleLogin(e)}
+                  >
+                    Submit
+                  </button>
+                </div>
+              </form>
+              <p>Create an account??<Link to='/register'>Register</Link></p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
